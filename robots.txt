@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://webonix-md.github.io/nado-design.com/sitemap.xml

@@ -13,21 +13,21 @@
   />
   <link rel="stylesheet" href="../assets/site.css" />
     <link rel="icon" href="../favicon.ico" />
-<link rel="canonical" href="https://webonix-md.github.io/nado-design.com/pages/web-design.html" />
-  <link rel="alternate" hreflang="ru" href="https://webonix-md.github.io/nado-design.com/pages/web-design.html" />
-  <link rel="alternate" hreflang="ro" href="https://webonix-md.github.io/nado-design.com/ro/pages/web-design.html" />
-  <link rel="alternate" hreflang="x-default" href="https://webonix-md.github.io/nado-design.com/pages/web-design.html" />
+<link rel="canonical" href="https://nado-design.com/pages/web-design.html" />
+  <link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/web-design.html" />
+  <link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/web-design.html" />
+  <link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/web-design.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NADO-design" />
   <meta property="og:title" content="Веб-дизайн — NADO-design" />
   <meta property="og:description" content="Мы проектируем и разрабатываем сайты, которые не просто выглядят современно — они решают конкретную бизнес-задачу: продают, объясняют, конвертируют." />
-  <meta property="og:url" content="https://webonix-md.github.io/nado-design.com/pages/web-design.html" />
-  <meta property="og:image" content="https://webonix-md.github.io/nado-design.com/images/440-og.jpg" />
+  <meta property="og:url" content="https://nado-design.com/pages/web-design.html" />
+  <meta property="og:image" content="https://nado-design.com/images/440-og.jpg" />
   <meta property="og:locale" content="ru_RU" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Веб-дизайн — NADO-design" />
   <meta name="twitter:description" content="Мы проектируем и разрабатываем сайты, которые не просто выглядят современно — они решают конкретную бизнес-задачу: продают, объясняют, конвертируют." />
-  <meta name="twitter:image" content="https://webonix-md.github.io/nado-design.com/images/440-og.jpg" />
+  <meta name="twitter:image" content="https://nado-design.com/images/440-og.jpg" />
 </head>
 <body data-page-slug="web-design">
   <div class="preloader preloader--intro preloader--intro-dark" data-preloader aria-hidden="true">
@@ -44,6 +44,7 @@
   <div data-nav></div>
 
   <main class="site-main">
+    <div class="container breadcrumbs-mount" data-breadcrumbs></div>
     <section class="section section--tight">
       <div class="container">
         <p class="eyebrow">01 / Веб-дизайн и разработка</p>
@@ -169,22 +170,19 @@
     <section class="section">
       <div class="container">
         <p class="eyebrow">Кейсы</p>
-        <div class="case-grid">
-      <a class="case-card" href="../pages/works/forma.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/forma/01.webp" alt="FORMA" loading="lazy" />
-        <span class="case-card__label" style="position:relative">Веб-дизайн и разработка</span>
-        <h3 class="case-card__title" style="position:relative">FORMA</h3>
-      </a>
-      <a class="case-card" href="../pages/works/kuzov.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/kuzov/01.webp" alt="КУЗОВ." loading="lazy" />
-        <span class="case-card__label" style="position:relative">Веб-дизайн и разработка</span>
-        <h3 class="case-card__title" style="position:relative">КУЗОВ.</h3>
-      </a>
-      <a class="case-card" href="../pages/works/osnova.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/osnova/01.webp" alt="ОСНОВА" loading="lazy" />
-        <span class="case-card__label" style="position:relative">Веб-дизайн и разработка</span>
-        <h3 class="case-card__title" style="position:relative">ОСНОВА</h3>
-      </a>
+        <div class="case-accordion" data-case-accordion>
+          <a class="case-accordion__item is-active" href="../pages/works/forma.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/forma/01.webp" alt="FORMA" loading="lazy" />
+            <span class="case-accordion__label">FORMA</span>
+          </a>
+          <a class="case-accordion__item" href="../pages/works/kuzov.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/kuzov/01.webp" alt="КУЗОВ." loading="lazy" />
+            <span class="case-accordion__label">КУЗОВ.</span>
+          </a>
+          <a class="case-accordion__item" href="../pages/works/osnova.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/osnova/01.webp" alt="ОСНОВА" loading="lazy" />
+            <span class="case-accordion__label">ОСНОВА</span>
+          </a>
         </div>
       </div>
     </section>

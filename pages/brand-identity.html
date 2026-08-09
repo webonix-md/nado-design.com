@@ -13,21 +13,21 @@
   />
   <link rel="stylesheet" href="../assets/site.css" />
     <link rel="icon" href="../favicon.ico" />
-<link rel="canonical" href="https://webonix-md.github.io/nado-design.com/pages/brand-identity.html" />
-  <link rel="alternate" hreflang="ru" href="https://webonix-md.github.io/nado-design.com/pages/brand-identity.html" />
-  <link rel="alternate" hreflang="ro" href="https://webonix-md.github.io/nado-design.com/ro/pages/brand-identity.html" />
-  <link rel="alternate" hreflang="x-default" href="https://webonix-md.github.io/nado-design.com/pages/brand-identity.html" />
+<link rel="canonical" href="https://nado-design.com/pages/brand-identity.html" />
+  <link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/brand-identity.html" />
+  <link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/brand-identity.html" />
+  <link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/brand-identity.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NADO-design" />
   <meta property="og:title" content="Айдентика — NADO-design" />
   <meta property="og:description" content="Полный цикл разработки визуальной идентичности — от первого эскиза логотипа до готового брендбука, по которому команда может работать без вас." />
-  <meta property="og:url" content="https://webonix-md.github.io/nado-design.com/pages/brand-identity.html" />
-  <meta property="og:image" content="https://webonix-md.github.io/nado-design.com/images/428-og.jpg" />
+  <meta property="og:url" content="https://nado-design.com/pages/brand-identity.html" />
+  <meta property="og:image" content="https://nado-design.com/images/428-og.jpg" />
   <meta property="og:locale" content="ru_RU" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Айдентика — NADO-design" />
   <meta name="twitter:description" content="Полный цикл разработки визуальной идентичности — от первого эскиза логотипа до готового брендбука, по которому команда может работать без вас." />
-  <meta name="twitter:image" content="https://webonix-md.github.io/nado-design.com/images/428-og.jpg" />
+  <meta name="twitter:image" content="https://nado-design.com/images/428-og.jpg" />
 </head>
 <body data-page-slug="brand-identity">
   <div class="preloader preloader--intro preloader--intro-dark" data-preloader aria-hidden="true">
@@ -43,6 +43,7 @@
   <div data-nav></div>
 
   <main class="site-main">
+    <div class="container breadcrumbs-mount" data-breadcrumbs></div>
    
     <section class="section section--tight">
       
@@ -143,22 +144,19 @@
     <section class="section">
       <div class="container">
         <p class="eyebrow">Кейсы</p>
-        <div class="case-grid">
-      <a class="case-card" href="../pages/works/documentolog.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/documentolog/01.webp" alt="Documentolog" loading="lazy" />
-        <span class="case-card__label" style="position:relative">Айдентика и брендинг</span>
-        <h3 class="case-card__title" style="position:relative">Documentolog</h3>
-      </a>
-      <a class="case-card" href="../pages/works/karion.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/karion/01.webp" alt="KARION" loading="lazy" />
-        <span class="case-card__label" style="position:relative">Айдентика и брендинг</span>
-        <h3 class="case-card__title" style="position:relative">KARION</h3>
-      </a>
-      <a class="case-card" href="../pages/works/logo-collection.html" data-reveal-image>
-        <img class="case-card__surface" src="../images/works/logo-collection/01.webp" alt="Логомарафон" loading="lazy" />
-        <span class="case-card__label" style="position:relative">Айдентика и брендинг</span>
-        <h3 class="case-card__title" style="position:relative">Логомарафон</h3>
-      </a>
+        <div class="case-accordion" data-case-accordion>
+          <a class="case-accordion__item is-active" href="../pages/works/documentolog.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/documentolog/01.webp" alt="Documentolog" loading="lazy" />
+            <span class="case-accordion__label">Documentolog</span>
+          </a>
+          <a class="case-accordion__item" href="../pages/works/karion.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/karion/01.webp" alt="KARION" loading="lazy" />
+            <span class="case-accordion__label">KARION</span>
+          </a>
+          <a class="case-accordion__item" href="../pages/works/logo-collection.html" data-case-accordion-item>
+            <img class="case-accordion__image" src="../images/works/logo-collection/01.webp" alt="Логомарафон" loading="lazy" />
+            <span class="case-accordion__label">Логомарафон</span>
+          </a>
         </div>
       </div>
     </section>

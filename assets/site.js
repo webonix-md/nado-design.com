@@ -19,6 +19,7 @@
       menu: 'Меню',
       menuAria: 'Открыть меню',
       langLabel: 'RO',
+      home: 'Главная',
       navItems: [
         { slug: 'web-design', label: 'Веб-дизайн' },
         { slug: 'brand-identity', label: 'Айдентика и брендинг' },
@@ -42,6 +43,7 @@
       menu: 'Meniu',
       menuAria: 'Deschide meniul',
       langLabel: 'RU',
+      home: 'Acasă',
       navItems: [
         { slug: 'web-design', label: 'Design web' },
         { slug: 'brand-identity', label: 'Identitate și branding' },
@@ -144,6 +146,42 @@
       '</ul></div>' +
       '<div class="footer__bottom"><span>© ' + new Date().getFullYear() + ' NADO-design</span><span>Chișinău, Moldova</span></div>' +
       '</div></footer>';
+  }
+
+  /* Хлебные крошки строятся из data-page-slug + положения текущего файла
+     относительно pages/works/ и pages/blog/ (у карточек кейсов и статей
+     data-page-slug совпадает с хабом — "works"/"blog", — поэтому подстраницу
+     от самого хаба отличаем по наличию "/works/" или "/blog/" в пути). */
+  function initBreadcrumbs() {
+    var mount = document.querySelector('[data-breadcrumbs]');
+    if (!mount) return;
+    var slug = document.body.dataset.pageSlug || '';
+    if (slug === 'home') return;
+
+    var crumbs = [{ label: t.home, href: ROOT + 'index.html' }];
+
+    var navItem = NAV_ITEMS.filter(function (item) { return item.slug === slug; })[0];
+    if (navItem) {
+      var isSubPage =
+        (slug === 'works' && location.pathname.indexOf('/works/') !== -1) ||
+        (slug === 'blog' && location.pathname.indexOf('/blog/') !== -1);
+
+      if (isSubPage) {
+        crumbs.push({ label: navItem.label, href: navItem.href });
+        crumbs.push({ label: document.title.split(' — ')[0], href: null });
+      } else {
+        crumbs.push({ label: navItem.label, href: null });
+      }
+    }
+
+    var items = crumbs.map(function (c) {
+      if (c.href) {
+        return '<li class="breadcrumbs__item"><a href="' + c.href + '">' + c.label + '</a></li>';
+      }
+      return '<li class="breadcrumbs__item is-current" aria-current="page">' + c.label + '</li>';
+    }).join('<li class="breadcrumbs__sep" aria-hidden="true">/</li>');
+
+    mount.innerHTML = '<nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="breadcrumbs__list">' + items + '</ol></nav>';
   }
 
   function initSmoothScroll() {
@@ -439,6 +477,319 @@
     });
   }
 
+  function initCaseAccordion() {
+    var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    document.querySelectorAll('[data-case-accordion]').forEach(function (accordion) {
+      var items = Array.prototype.slice.call(accordion.querySelectorAll('[data-case-accordion-item]'));
+      if (!items.length) return;
+
+      function setActive(target) {
+        items.forEach(function (item) { item.classList.toggle('is-active', item === target); });
+      }
+
+      if (supportsHover) {
+        items.forEach(function (item) {
+          item.addEventListener('mouseenter', function () { setActive(item); });
+        });
+      } else {
+        // На тач-устройствах первый тап по свёрнутому пункту раскрывает его,
+        // а не сразу уводит по ссылке — иначе почти всегда промах случайным нажатием.
+        items.forEach(function (item) {
+          item.addEventListener('click', function (e) {
+            if (!item.classList.contains('is-active')) {
+              e.preventDefault();
+              setActive(item);
+            }
+          });
+        });
+      }
+    });
+  }
+
+  /* Форма заявки шлёт JSON на тот же Cloudflare Worker, что и форма на webonix.md —
+     общий Telegram-бот принимает лиды с обоих сайтов, поэтому эндпоинт/формат
+     payload должны совпадать в точности. */
+  function initContactForm() {
+    var form = document.querySelector('[data-contact-form]');
+    if (!form) return;
+    var status = form.querySelector('[data-form-status]');
+    var FORM_ENDPOINT = 'https://webonix-form.igorok7312.workers.dev';
+    var MESSAGES = {
+      ru: {
+        sending: 'Отправка... ',
+        done: 'Заявка отправлена. Ответим в ближайшее время.',
+        error: 'Ошибка отправки. Попробуйте ещё раз или напишите в Telegram.'
+      },
+      ro: {
+        sending: 'Se trimite... ',
+        done: 'Cererea a fost trimisă. Răspundem în curând.',
+        error: 'Eroare la trimitere. Încercați din nou sau scrieți pe Telegram.'
+      }
+    };
+    var msg = MESSAGES[LANG] || MESSAGES.ru;
+    var frames = ['█░░░░░░░░░', '███░░░░░░░', '█████░░░░░', '███████░░░', '██████████'];
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = new FormData(form);
+      var payload = {
+        name: data.get('name') || '',
+        phone: data.get('phone') || '',
+        message: data.get('message') || '',
+        messenger: data.get('messenger') || '',
+        page: document.title
+      };
+
+      var frame = 0;
+      status.textContent = msg.sending + frames[0];
+      var iv = setInterval(function () {
+        frame++;
+        if (frame < frames.length) status.textContent = msg.sending + frames[frame];
+      }, 220);
+
+      fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        clearInterval(iv);
+        status.textContent = res.ok ? msg.done : msg.error;
+        if (res.ok) form.reset();
+      }).catch(function () {
+        clearInterval(iv);
+        status.textContent = msg.error;
+      });
+    });
+  }
+
+  /* 3D-карусель работ: элементы разложены по кругу через rotateY+translateZ
+     внутри контейнера с preserve-3d — перетаскивание крутит кольцо, автовращение
+     работает в простое, фильтр пересобирает круг только из подходящих карточек. */
+  function initOrbitGallery() {
+    var gallery = document.querySelector('[data-orbit-gallery]');
+    if (!gallery) return;
+    var ring = gallery.querySelector('[data-orbit-ring]');
+    var allItems = Array.prototype.slice.call(ring.querySelectorAll('[data-orbit-item]'));
+    var bar = document.querySelector('[data-filter-bar]');
+
+    var visibleItems = allItems;
+    var ringAngle = 0; // вращение кольца вокруг вертикальной оси (спин влево/вправо)
+    var tiltAngle = -14; // наклон всего кольца вокруг горизонтальной оси (заглянуть сверху/снизу)
+    var TILT_MIN = -60;
+    var TILT_MAX = 60;
+    var radius = 0;
+
+    // Звёздное поле — точки разбросаны по сфере вокруг кольца (не только на его
+    // плоскости), крутятся вместе с ним, т.к. лежат внутри того же .orbit-gallery__ring.
+    var STAR_COUNT = 280;
+    var starsWrap = document.createElement('div');
+    starsWrap.className = 'orbit-gallery__stars';
+    ring.appendChild(starsWrap);
+    var stars = [];
+    for (var si = 0; si < STAR_COUNT; si++) {
+      var star = document.createElement('span');
+      star.className = 'orbit-gallery__star';
+      var isAccent = Math.random() < 0.18;
+      var size = (Math.random() * 2.2 + 1.2).toFixed(1);
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.background = isAccent ? 'var(--accent)' : '#fff';
+      star.style.boxShadow = '0 0 ' + (isAccent ? '6px 1px var(--accent-glow)' : '4px 1px rgba(255,255,255,0.55)');
+      star.style.setProperty('--star-op', (Math.random() * 0.5 + 0.5).toFixed(2));
+      star.style.animationDuration = (2 + Math.random() * 3.5).toFixed(2) + 's';
+      star.style.animationDelay = '-' + (Math.random() * 4).toFixed(2) + 's';
+      starsWrap.appendChild(star);
+      stars.push({
+        el: star,
+        azimuth: Math.random() * 360,
+        elevation: (Math.random() - 0.5) * 150, // -75..75° — разброс по "широте" сферы
+        radiusFactor: 0.5 + Math.random() * 1.1 // часть звёзд ближе центра, часть дальше кольца
+      });
+    }
+
+    function positionStars() {
+      stars.forEach(function (s) {
+        var r = radius * s.radiusFactor;
+        var az = s.azimuth * Math.PI / 180;
+        var el = s.elevation * Math.PI / 180;
+        var x = r * Math.cos(el) * Math.sin(az);
+        var y = r * Math.sin(el);
+        var z = r * Math.cos(el) * Math.cos(az);
+        s.el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,' + z.toFixed(1) + 'px)';
+      });
+    }
+
+    function computeRadius() {
+      // offsetWidth, не getBoundingClientRect — карточка уже может стоять
+      // под 3D-трансформацией, а перспектива искажает видимую ширину
+      // прямоугольника, из-за чего радиус "плыл" бы с каждым пересчётом.
+      var w = visibleItems.length ? visibleItems[0].offsetWidth : 0;
+      var n = visibleItems.length || 1;
+      var natural = n > 1 ? (w / 2) / Math.tan(Math.PI / n) * 1.15 : 0;
+      // Самая широкая точка кольца — это радиус ПЛЮС половина ширины карточки
+      // (боковая карточка на ~90°), а не сам радиус. Считаем максимум так,
+      // чтобы именно эта точка не вылезала за контейнер, иначе края обрезаются.
+      var maxByContainer = Math.max(0, (gallery.clientWidth / 2) * 0.95 - w / 2);
+      radius = Math.min(natural, maxByContainer);
+    }
+
+    function paint() {
+      // Каждая карточка развёрнута рёбром наружу (rotateY на себе) и стоит
+      // на общем кольце — целиком видно всё кольцо, а не только "фасад".
+      // Кольцо целиком крутится по Y (спин) и наклоняется по X (взгляд
+      // сверху/снизу), чтобы ощущалось настоящее 3D-пространство.
+      visibleItems.forEach(function (item) {
+        var base = parseFloat(item.dataset.baseAngle || '0');
+        var total = ((base + ringAngle) % 360 + 360) % 360;
+        var rad = (total > 180 ? total - 360 : total) * Math.PI / 180;
+        var factor = (Math.cos(rad) + 1) / 2;
+        item.style.transform = 'translate(-50%,-50%) rotateY(' + base + 'deg) translateZ(' + radius.toFixed(1) + 'px)';
+        item.style.opacity = (0.6 + 0.4 * factor).toFixed(2);
+        item.style.pointerEvents = factor < 0.1 ? 'none' : '';
+      });
+      ring.style.transform = 'rotateX(' + tiltAngle.toFixed(1) + 'deg) rotateY(' + ringAngle.toFixed(1) + 'deg)';
+    }
+
+    function applyRing() {
+      paint();
+    }
+
+    function layout() {
+      computeRadius();
+      var n = visibleItems.length;
+      visibleItems.forEach(function (item, i) {
+        item.dataset.baseAngle = (360 / n) * i;
+      });
+      positionStars();
+      applyRing();
+    }
+
+    function applyFilter(filter) {
+      visibleItems = allItems.filter(function (item) {
+        return filter === 'all' || item.dataset.category === filter;
+      });
+      allItems.forEach(function (item) {
+        item.style.display = visibleItems.indexOf(item) === -1 ? 'none' : '';
+      });
+      ringAngle = 0;
+      layout();
+    }
+
+    if (bar) {
+      bar.addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        bar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        applyFilter(btn.dataset.filter);
+      });
+    }
+
+    if (reduceMotion) {
+      layout();
+      return;
+    }
+
+    var isDragging = false;
+    var startX = 0;
+    var startY = 0;
+    var lastX = 0;
+    var startAngle = 0;
+    var startTilt = 0;
+    var velocity = 0;
+    var totalMove = 0;
+    var idleTimer = null;
+    var autoRotateActive = false;
+    var autoRotateRAF = null;
+
+    function stopAutoRotate() {
+      autoRotateActive = false;
+      if (autoRotateRAF) cancelAnimationFrame(autoRotateRAF);
+    }
+
+    function autoRotateStep() {
+      if (!autoRotateActive) return;
+      ringAngle += 0.03;
+      applyRing();
+      autoRotateRAF = requestAnimationFrame(autoRotateStep);
+    }
+
+    function scheduleAutoRotate() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function () {
+        autoRotateActive = true;
+        autoRotateRAF = requestAnimationFrame(autoRotateStep);
+      }, 1200);
+    }
+
+    function inertiaStep() {
+      if (Math.abs(velocity) < 0.05) { scheduleAutoRotate(); return; }
+      ringAngle -= velocity * 0.3;
+      velocity *= 0.92;
+      applyRing();
+      requestAnimationFrame(inertiaStep);
+    }
+
+    gallery.addEventListener('pointerdown', function (e) {
+      isDragging = true;
+      totalMove = 0;
+      velocity = 0;
+      startX = e.clientX;
+      startY = e.clientY;
+      lastX = e.clientX;
+      startAngle = ringAngle;
+      startTilt = tiltAngle;
+      gallery.classList.add('is-dragging');
+      stopAutoRotate();
+      clearTimeout(idleTimer);
+      gallery.setPointerCapture(e.pointerId);
+    });
+
+    gallery.addEventListener('pointermove', function (e) {
+      if (!isDragging) return;
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      velocity = e.clientX - lastX;
+      lastX = e.clientX;
+      totalMove = Math.max(totalMove, Math.abs(dx), Math.abs(dy));
+      ringAngle = startAngle - dx * 0.3;
+      // Тащим вниз — верх кольца наклоняется к нам (заглядываем сверху),
+      // тащим вверх — наоборот, заглядываем снизу.
+      tiltAngle = Math.max(TILT_MIN, Math.min(TILT_MAX, startTilt + dy * 0.25));
+      applyRing();
+    });
+
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      gallery.classList.remove('is-dragging');
+      if (Math.abs(velocity) > 0.5) {
+        requestAnimationFrame(inertiaStep);
+      } else {
+        scheduleAutoRotate();
+      }
+    }
+
+    gallery.addEventListener('pointerup', endDrag);
+    gallery.addEventListener('pointercancel', endDrag);
+
+    gallery.addEventListener('click', function (e) {
+      if (totalMove > 6) { e.preventDefault(); }
+    });
+
+    gallery.addEventListener('mouseenter', function () { clearTimeout(idleTimer); stopAutoRotate(); });
+    gallery.addEventListener('mouseleave', function () { if (!isDragging) scheduleAutoRotate(); });
+
+    layout();
+    scheduleAutoRotate();
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(layout, 150);
+    });
+  }
+
   function initFilter() {
     var bar = document.querySelector('[data-filter-bar]');
     var grid = document.querySelector('[data-works-grid]');
@@ -579,6 +930,7 @@
     initPreloader();
     renderNav(slug, { hideLogo: isHome });
     renderFooter();
+    initBreadcrumbs();
     initSmoothScroll();
     initTextReveal();
     initImageReveal();
@@ -590,6 +942,9 @@
     initMagneticButtons();
     initTimeline();
     initFilter();
+    initOrbitGallery();
+    initCaseAccordion();
+    initContactForm();
 
     if (isHome) initHero();
   });

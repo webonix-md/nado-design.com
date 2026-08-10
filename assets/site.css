@@ -1511,13 +1511,13 @@ html.is-preloading body {
 /* ── Orbit gallery (3D карусель работ) ───────────────────── */
 
 .orbit-gallery {
-  --orbit-item-w: clamp(160px, 18vw, 250px);
-  --orbit-item-h: calc(var(--orbit-item-w) * 0.6);
+  --orbit-item-w: clamp(160px, 18vw, 150px);
+  --orbit-item-h: calc(var(--orbit-item-w) * 0.5);
   position: relative;
   width: calc(100vw - 128px);
   margin-left: calc(-50vw + 50% + 64px);
   margin-right: calc(-50vw + 50% + 64px);
-  height: 100vh;
+  height: 80vh;
   margin-top: clamp(24px, 4vw, 40px);
   perspective: 1400px;
   overflow: hidden;
@@ -1561,17 +1561,28 @@ html.is-preloading body {
   transform-style: preserve-3d;
 }
 
-.orbit-gallery__stars {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  transform-style: preserve-3d;
+/* ── Cosmic background (главная + works) ─────────────────── */
+
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  perspective: 1400px;
   pointer-events: none;
 }
 
-.orbit-gallery__star {
+.cosmic-bg__sphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.cosmic-bg__star {
   position: absolute;
   top: 0;
   left: 0;
@@ -1579,21 +1590,34 @@ html.is-preloading body {
   border-radius: 50%;
   pointer-events: none;
   opacity: var(--star-op, 0.9);
-  animation-name: orbit-star-twinkle;
+  animation-name: cosmic-star-twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
 
-@keyframes orbit-star-twinkle {
+@keyframes cosmic-star-twinkle {
   0%, 100% { opacity: var(--star-op, 0.7); }
   50% { opacity: calc(var(--star-op, 0.7) * 0.25); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbit-gallery__star {
+  .cosmic-bg__star {
     animation: none;
     opacity: var(--star-op, 0.7);
   }
+}
+
+/* Весь остальной контент страницы должен рисоваться поверх фона —
+   у .cosmic-bg z-index:0, поднимаем main/footer явно. [data-nav] сюда
+   НЕ включаем: у самого .nav внутри уже есть свой position:fixed;
+   z-index:100 на уровне body, а обёртка с position:relative создала бы
+   для него новый стек и заперла бы его ниже основного контента —
+   именно так один раз сломался клик по бургеру. */
+.site-main,
+main,
+.footer {
+  position: relative;
+  z-index: 1;
 }
 
 .orbit-gallery__item {
@@ -1602,9 +1626,8 @@ html.is-preloading body {
   left: 0;
   width: var(--orbit-item-w);
   height: var(--orbit-item-h);
-  padding: 8% 8% 20%;
   box-sizing: border-box;
-  background: #f4f3ef;
+  overflow: hidden;
   border-radius: 2px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25), 0 24px 48px rgba(0,0,0,0.5);
   display: block;
@@ -1619,11 +1642,19 @@ html.is-preloading body {
   pointer-events: none;
 }
 
+.orbit-gallery__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(11,11,13,0.88) 0%, rgba(11,11,13,0) 55%);
+  pointer-events: none;
+}
+
 .orbit-gallery__label {
   position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 6%;
+  left: 4%;
+  right: 4%;
+  bottom: 4%;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -1634,15 +1665,14 @@ html.is-preloading body {
 .orbit-gallery__category {
   font-size: 0.5625rem;
   letter-spacing: 0.05em;
-  /* text-transform: uppercase; */
-  color: #9a9890;
+  color: var(--fg);
 }
 
 .orbit-gallery__title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.75rem;
-  color: #17171a;
+  color: var(--fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1653,6 +1683,58 @@ html.is-preloading body {
   text-align: center;
   font-size: var(--fs-eyebrow);
   color: var(--fg-muted);
+}
+
+/* На узких экранах 3D-кольцо не строится вообще (см. initOrbitGallery в
+   site.js — ниже 768px это просто не запускается), вместо него — обычная
+   горизонтальная лента карточек со scroll-snap, никакого драг-вращения. */
+.orbit-gallery--flat {
+  /* десктопный инсет в 64px с каждой стороны съедал бы половину узкого
+     экрана — на мобильном лента едет до самого края, свой отступ у padding */
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  height: auto;
+  perspective: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  cursor: auto;
+  touch-action: pan-x pan-y;
+  display: flex;
+  gap: 12px;
+  padding: 4px 24px 20px;
+}
+
+.orbit-gallery--flat::before,
+.orbit-gallery--flat::after {
+  display: none;
+}
+
+.orbit-gallery--flat .orbit-gallery__ring {
+  position: static;
+  display: contents;
+}
+
+.orbit-gallery--flat .orbit-gallery__item {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex: 0 0 auto;
+  width: 68vw;
+  max-width: 300px;
+  /* независимо от --orbit-item-h (её считает JS только для десктопного
+     режима) — на мобильном высота карточки просто держит свою пропорцию */
+  height: auto;
+  aspect-ratio: 16/9;
+  scroll-snap-align: center;
+  opacity: 1;
+  transform: none;
+}
+
+.orbit-gallery--flat .orbit-gallery__hint {
+  display: none;
 }
 
 /* ── Work case page ───────────────────────────────────────── */

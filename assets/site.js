@@ -11,6 +11,9 @@
   var LANG = window.__LANG__ === 'ro' ? 'ro' : 'ru';
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var lenisInstance = null;
+  var cosmicSphere = null; // элемент со звёздами фона — если есть орбитальная
+  // карусель на странице, она сама крутит эту сферу вместо автовращения
+  var cosmicAutoRotate = true;
 
   /* Единственный источник переведённых строк общей "обвязки" (nav/hero-тикер) —
      контент самих страниц переводится в разметке каждой ro/-страницы отдельно. */
@@ -565,30 +568,25 @@
   /* 3D-карусель работ: элементы разложены по кругу через rotateY+translateZ
      внутри контейнера с preserve-3d — перетаскивание крутит кольцо, автовращение
      работает в простое, фильтр пересобирает круг только из подходящих карточек. */
-  function initOrbitGallery() {
-    var gallery = document.querySelector('[data-orbit-gallery]');
-    if (!gallery) return;
-    var ring = gallery.querySelector('[data-orbit-ring]');
-    var allItems = Array.prototype.slice.call(ring.querySelectorAll('[data-orbit-item]'));
-    var bar = document.querySelector('[data-filter-bar]');
-
-    var visibleItems = allItems;
-    var ringAngle = 0; // вращение кольца вокруг вертикальной оси (спин влево/вправо)
-    var tiltAngle = -14; // наклон всего кольца вокруг горизонтальной оси (заглянуть сверху/снизу)
-    var TILT_MIN = -60;
-    var TILT_MAX = 60;
-    var radius = 0;
-
-    // Звёздное поле — точки разбросаны по сфере вокруг кольца (не только на его
-    // плоскости), крутятся вместе с ним, т.к. лежат внутри того же .orbit-gallery__ring.
+  /* Фон "космос" — вращающаяся сфера точек на весь экран, независимая от
+     орбитальной карусели works.html (та же визуальная логика: точки раскиданы
+     по сфере через азимут/широту/радиус, но крутится сама по себе, без драга,
+     и сидит фиксированным слоем позади всего контента). Только на главной и works. */
+  function initCosmicBackground() {
     var STAR_COUNT = 280;
-    var starsWrap = document.createElement('div');
-    starsWrap.className = 'orbit-gallery__stars';
-    ring.appendChild(starsWrap);
+    var bg = document.createElement('div');
+    bg.className = 'cosmic-bg';
+    bg.setAttribute('aria-hidden', 'true');
+    var sphere = document.createElement('div');
+    sphere.className = 'cosmic-bg__sphere';
+    bg.appendChild(sphere);
+    document.body.insertBefore(bg, document.body.firstChild);
+    cosmicSphere = sphere;
+
     var stars = [];
     for (var si = 0; si < STAR_COUNT; si++) {
       var star = document.createElement('span');
-      star.className = 'orbit-gallery__star';
+      star.className = 'cosmic-bg__star';
       var isAccent = Math.random() < 0.18;
       var size = (Math.random() * 2.2 + 1.2).toFixed(1);
       star.style.width = size + 'px';
@@ -598,16 +596,18 @@
       star.style.setProperty('--star-op', (Math.random() * 0.5 + 0.5).toFixed(2));
       star.style.animationDuration = (2 + Math.random() * 3.5).toFixed(2) + 's';
       star.style.animationDelay = '-' + (Math.random() * 4).toFixed(2) + 's';
-      starsWrap.appendChild(star);
+      sphere.appendChild(star);
       stars.push({
         el: star,
         azimuth: Math.random() * 360,
-        elevation: (Math.random() - 0.5) * 150, // -75..75° — разброс по "широте" сферы
-        radiusFactor: 0.5 + Math.random() * 1.1 // часть звёзд ближе центра, часть дальше кольца
+        elevation: (Math.random() - 0.5) * 160,
+        radiusFactor: 0.4 + Math.random() * 1.3
       });
     }
 
-    function positionStars() {
+    var radius = 0;
+    function layout() {
+      radius = Math.min(window.innerWidth, window.innerHeight) * 0.55;
       stars.forEach(function (s) {
         var r = radius * s.radiusFactor;
         var az = s.azimuth * Math.PI / 180;
@@ -618,19 +618,89 @@
         s.el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,' + z.toFixed(1) + 'px)';
       });
     }
+    layout();
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(layout, 150);
+    });
+
+    if (reduceMotion) {
+      sphere.style.transform = 'rotateX(-14deg)';
+      return;
+    }
+
+    var spinY = 0;
+    var tiltX = -14;
+    function spin() {
+      // На странице с каруселью initOrbitGallery() сам крутит sphere вслед
+      // за кольцом (драг/наклон/автовращение) — этот цикл тогда просто
+      // ничего не делает, кроме как ждёт на случай если карусель исчезнет.
+      if (cosmicAutoRotate) {
+        spinY += 0.015;
+        sphere.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + spinY.toFixed(2) + 'deg)';
+      }
+      requestAnimationFrame(spin);
+    }
+    requestAnimationFrame(spin);
+  }
+
+  function initOrbitGallery() {
+    var gallery = document.querySelector('[data-orbit-gallery]');
+    if (!gallery) return;
+    var ring = gallery.querySelector('[data-orbit-ring]');
+    var allItems = Array.prototype.slice.call(ring.querySelectorAll('[data-orbit-item]'));
+    var bar = document.querySelector('[data-filter-bar]');
+
+    // На маленьких экранах 3D-кольцо не строим вообще — драг для вращения
+    // конфликтует со скроллом страницы и жестами тач-устройств. Вместо этого
+    // просто горизонтальная лента со scroll-snap (.orbit-gallery--flat в CSS),
+    // а фильтр — тот же плоский show/hide, что и на blog.html.
+    var isDesktopCarousel = window.matchMedia('(min-width: 768px)').matches;
+    if (!isDesktopCarousel) {
+      gallery.classList.add('orbit-gallery--flat');
+      if (bar) {
+        bar.addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-filter]');
+          if (!btn) return;
+          bar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          var filter = btn.dataset.filter;
+          allItems.forEach(function (item) {
+            item.style.display = (filter === 'all' || item.dataset.category === filter) ? '' : 'none';
+          });
+        });
+      }
+      return;
+    }
+
+    // Карусель есть на странице — забираем управление вращением фона у него
+    // самого: дальше sphere крутится строго вместе с кольцом (см. paint()).
+    cosmicAutoRotate = false;
+
+    var visibleItems = allItems;
+    var ringAngle = 0; // вращение кольца вокруг вертикальной оси (спин влево/вправо)
+    var tiltAngle = -4; // наклон всего кольца вокруг горизонтальной оси (заглянуть сверху/снизу)
+    var TILT_MIN = -60;
+    var TILT_MAX = 60;
+    var radius = 0;
 
     function computeRadius() {
-      // offsetWidth, не getBoundingClientRect — карточка уже может стоять
-      // под 3D-трансформацией, а перспектива искажает видимую ширину
-      // прямоугольника, из-за чего радиус "плыл" бы с каждым пересчётом.
-      var w = visibleItems.length ? visibleItems[0].offsetWidth : 0;
+      // Радиус фиксирован по контейнеру и НЕ зависит от количества карточек —
+      // при фильтрации круг больше не "сжимается". Под число элементов
+      // подстраивается размер самих карточек (computeItemSize).
+      radius = gallery.clientWidth * 0.5 * 0.8;
+    }
+
+    function computeItemSize() {
+      // Обратная формула к "натуральному" радиусу правильного n-угольника:
+      // при фиксированном радиусе карточки должны быть шире, если их мало,
+      // и уже, если их много, чтобы кольцо не выглядело ни дырявым, ни слипшимся.
       var n = visibleItems.length || 1;
-      var natural = n > 1 ? (w / 2) / Math.tan(Math.PI / n) * 1.15 : 0;
-      // Самая широкая точка кольца — это радиус ПЛЮС половина ширины карточки
-      // (боковая карточка на ~90°), а не сам радиус. Считаем максимум так,
-      // чтобы именно эта точка не вылезала за контейнер, иначе края обрезаются.
-      var maxByContainer = Math.max(0, (gallery.clientWidth / 2) * 0.95 - w / 2);
-      radius = Math.min(natural, maxByContainer);
+      var w = n > 1 ? (radius * 2 * Math.tan(Math.PI / n)) / 1.15 : radius * 0.8;
+      w = Math.max(100, Math.min(400, w));
+      gallery.style.setProperty('--orbit-item-w', w.toFixed(0) + 'px');
     }
 
     function paint() {
@@ -647,7 +717,9 @@
         item.style.opacity = (0.6 + 0.4 * factor).toFixed(2);
         item.style.pointerEvents = factor < 0.1 ? 'none' : '';
       });
-      ring.style.transform = 'rotateX(' + tiltAngle.toFixed(1) + 'deg) rotateY(' + ringAngle.toFixed(1) + 'deg)';
+      var ringTransform = 'rotateX(' + tiltAngle.toFixed(1) + 'deg) rotateY(' + ringAngle.toFixed(1) + 'deg)';
+      ring.style.transform = ringTransform;
+      if (cosmicSphere) cosmicSphere.style.transform = ringTransform;
     }
 
     function applyRing() {
@@ -656,11 +728,11 @@
 
     function layout() {
       computeRadius();
+      computeItemSize();
       var n = visibleItems.length;
       visibleItems.forEach(function (item, i) {
         item.dataset.baseAngle = (360 / n) * i;
       });
-      positionStars();
       applyRing();
     }
 
@@ -724,10 +796,25 @@
 
     function inertiaStep() {
       if (Math.abs(velocity) < 0.05) { scheduleAutoRotate(); return; }
-      ringAngle -= velocity * 0.3;
+      ringAngle += velocity * 0.3;
       velocity *= 0.92;
       applyRing();
       requestAnimationFrame(inertiaStep);
+    }
+
+    // Указатель "захватываем" (setPointerCapture) НЕ сразу на pointerdown,
+    // а только когда движение реально превысило порог — иначе браузер начинает
+    // маршрутизировать через захвативший элемент события на карточках,
+    // и переход по ссылке-карточке перестаёт срабатывать даже при обычном клике.
+    var pendingPointerId = null;
+    var captured = false;
+
+    function releaseCaptureIfAny() {
+      if (captured && pendingPointerId !== null) {
+        try { gallery.releasePointerCapture(pendingPointerId); } catch (err) {}
+      }
+      captured = false;
+      pendingPointerId = null;
     }
 
     gallery.addEventListener('pointerdown', function (e) {
@@ -739,10 +826,9 @@
       lastX = e.clientX;
       startAngle = ringAngle;
       startTilt = tiltAngle;
-      gallery.classList.add('is-dragging');
+      pendingPointerId = e.pointerId;
       stopAutoRotate();
       clearTimeout(idleTimer);
-      gallery.setPointerCapture(e.pointerId);
     });
 
     gallery.addEventListener('pointermove', function (e) {
@@ -752,7 +838,15 @@
       velocity = e.clientX - lastX;
       lastX = e.clientX;
       totalMove = Math.max(totalMove, Math.abs(dx), Math.abs(dy));
-      ringAngle = startAngle - dx * 0.3;
+
+      if (!captured && totalMove > 6) {
+        captured = true;
+        gallery.classList.add('is-dragging');
+        try { gallery.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      if (!captured) return; // пока не решили, что это драг, — кольцо не крутим
+
+      ringAngle = startAngle + dx * 0.3;
       // Тащим вниз — верх кольца наклоняется к нам (заглядываем сверху),
       // тащим вверх — наоборот, заглядываем снизу.
       tiltAngle = Math.max(TILT_MIN, Math.min(TILT_MAX, startTilt + dy * 0.25));
@@ -763,6 +857,7 @@
       if (!isDragging) return;
       isDragging = false;
       gallery.classList.remove('is-dragging');
+      releaseCaptureIfAny();
       if (Math.abs(velocity) > 0.5) {
         requestAnimationFrame(inertiaStep);
       } else {
@@ -928,6 +1023,7 @@
     var isHome = document.body.dataset.pageSlug === 'home';
 
     initPreloader();
+    initCosmicBackground();
     renderNav(slug, { hideLogo: isHome });
     renderFooter();
     initBreadcrumbs();

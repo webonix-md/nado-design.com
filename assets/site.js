@@ -573,7 +573,7 @@
      по сфере через азимут/широту/радиус, но крутится сама по себе, без драга,
      и сидит фиксированным слоем позади всего контента). Только на главной и works. */
   function initCosmicBackground() {
-    var STAR_COUNT = 280;
+    var STAR_COUNT = window.matchMedia('(min-width: 768px)').matches ? 280 : 120;
     var bg = document.createElement('div');
     bg.className = 'cosmic-bg';
     bg.setAttribute('aria-hidden', 'true');

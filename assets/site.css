@@ -1325,6 +1325,7 @@ html.is-preloading body {
 
 .blog-card {
   display: block;
+  background-color: #0A0A0B90;
 }
 
 .blog-card__cover {
@@ -1431,6 +1432,7 @@ html.is-preloading body {
   max-width: 66ch;
   font-size: 1.0625rem;
   line-height: 1.7;
+  background-color: #0A0A0B90;
 }
 
 .article-prose p {

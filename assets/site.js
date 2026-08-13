@@ -142,8 +142,8 @@
       '<div class="footer__top">' +
       '<a class="footer__logo" href="' + ROOT + 'index.html">NADO</a>' +
       '<ul class="footer__contacts">' +
-      '<li><a href="nadodesignmd@gmail.com">nadodesignmd@gmail.com</a></li>' +
-      '<li><a href="tel:+37379502527">+373 7 950 25 27</a></li>' +
+      '<li><a href="mailto:nadodesignmd@gmail.com">nadodesignmd@gmail.com</a></li>' +
+      '<li><a href="tel:+37379502527">+3737 950 25 27</a></li>' +
       '<li><a href="https://t.me/nadodesigncom" target="_blank" rel="noopener">Telegram</a></li>' +
       '<li><a href="https://wa.me/37379502527" target="_blank" rel="noopener">WhatsApp</a></li>' +
       '</ul></div>' +

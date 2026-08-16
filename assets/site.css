@@ -1095,12 +1095,50 @@ html.is-preloading body {
 .footer__bottom {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
   font-size: 0.8125rem;
   color: var(--fg-muted);
+}
+
+.footer__credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-muted);
+  transition: color 0.3s var(--ease-out);
+}
+
+.footer__credit:hover {
+  color: var(--accent);
+}
+
+.footer__credit-text {
+  white-space: nowrap;
+}
+
+.footer__credit-logo {
+  width: 120px;
+  height: auto;
+  flex-shrink: 0;
+  fill: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .footer__bottom {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .footer__credit {
+    flex-direction: column;
+   
+    align-self: center;
+    
+  }
 }
 
 /* ── Word reveal (SplitType targets) ─────────────────────── */

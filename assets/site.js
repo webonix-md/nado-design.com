@@ -24,6 +24,7 @@
       langLabel: 'RO',
       home: 'Главная',
       footerCredit: 'Сайт создан студией Webonix',
+      privacy: 'Политика конфиденциальности',
       navItems: [
         { slug: 'web-design', label: 'Веб-дизайн' },
         { slug: 'brand-identity', label: 'Айдентика и брендинг' },
@@ -49,6 +50,7 @@
       langLabel: 'RU',
       home: 'Acasă',
       footerCredit: 'Site realizat de studioul Webonix',
+      privacy: 'Politica de confidențialitate',
       navItems: [
         { slug: 'web-design', label: 'Design web' },
         { slug: 'brand-identity', label: 'Identitate și branding' },
@@ -147,11 +149,13 @@
       '<li><a href="mailto:nadodesignmd@gmail.com">nadodesignmd@gmail.com</a></li>' +
       '<li><a href="tel:+37379502527">+3737 950 25 27</a></li>' +
       '<li><a href="https://t.me/nadodesigncom" target="_blank" rel="noopener">Telegram</a></li>' +
+      '<li><a href="viber://chat?number=%2B37379502527">Viber</a></li>' +
       '<li><a href="https://wa.me/37379502527" target="_blank" rel="noopener">WhatsApp</a></li>' +
       '</ul></div>' +
       '<div class="footer__bottom">' +
       '<span>© ' + new Date().getFullYear() + ' NADO-design</span>' +
       '<span>Chișinău, Moldova</span>' +
+      '<a class="footer__privacy" href="' + ROOT + 'pages/privacy.html">' + t.privacy + '</a>' +
       '<a href="https://webonix.md" target="_blank" rel="noopener" class="footer__credit">' +
       '<span class="footer__credit-text">© ' + new Date().getFullYear() + ' ' + t.footerCredit + '</span>' +
       '<svg class="footer__credit-logo" viewBox="44 186 433 141" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
@@ -186,7 +190,9 @@
     var crumbs = [{ label: t.home, href: ROOT + 'index.html' }];
 
     var navItem = NAV_ITEMS.filter(function (item) { return item.slug === slug; })[0];
-    if (navItem) {
+    if (slug === 'privacy') {
+      crumbs.push({ label: t.privacy, href: null });
+    } else if (navItem) {
       var isSubPage =
         (slug === 'works' && location.pathname.indexOf('/works/') !== -1) ||
         (slug === 'blog' && location.pathname.indexOf('/blog/') !== -1);
@@ -502,6 +508,136 @@
     });
   }
 
+  /* Поля .work-meta (Задача/Решение/...) зажимаются до 8 строк, чтобы блок
+     всегда выглядел ровно — кнопка "Читать полностью" появляется только там,
+     где текст реально обрезался (сравниваем scrollHeight/clientHeight). */
+  function initWorkMetaClamp() {
+    document.querySelectorAll('.work-meta__value').forEach(function (el) {
+      el.classList.add('is-clamped');
+      if (el.scrollHeight <= el.clientHeight + 1) {
+        el.classList.remove('is-clamped');
+        return;
+      }
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'work-meta__toggle';
+      toggle.textContent = 'Читать полностью';
+      toggle.addEventListener('click', function () {
+        var expanded = el.classList.toggle('is-clamped') === false;
+        toggle.textContent = expanded ? 'Свернуть' : 'Читать полностью';
+      });
+      el.insertAdjacentElement('afterend', toggle);
+    });
+  }
+
+  /* Скролл-стена фото кейса — карточки разложены вразброс по детерминированной
+     сетке (buildLayout, портировано 1:1 из React-версии, без Math.random —
+     раскладка не "прыгает" при пересборке на resize), заголовок висит
+     по центру экрана (position:sticky + mix-blend-mode: exclusion), а каждая
+     карточка вырастает 0→1→0, пока проезжает через вьюпорт (ScrollTrigger,
+     тот же GSAP, что уже подключён на каждой странице — без React/npm). */
+  function initPortraitWall() {
+    var root = document.querySelector('[data-portrait-wall]');
+    if (!root) return;
+    var grid = root.querySelector('[data-portrait-wall-grid]');
+    var hint = root.querySelector('[data-portrait-wall-hint]');
+    if (!grid) return;
+
+    var originalItems = Array.prototype.slice.call(grid.querySelectorAll('[data-portrait-wall-item]'));
+    if (!originalItems.length) return;
+
+    var desiredCols = parseInt(root.dataset.columns || '4', 10);
+    var hasGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
+    var itemTriggers = [];
+    var scrollSpeed = 1; // multiplier on scroll distance per image (1 = old speed, higher = slower growth)
+
+    function buildLayout(count, cols) {
+      var rows = [];
+      var i = 0, r = 0;
+      while (i < count) {
+        var row = new Array(cols).fill(-1);
+        var a = (r * 2 + (r % 2)) % cols;
+        row[a] = i++;
+        if (r % 3 === 0 && i < count) {
+          var b = (a + 2) % cols;
+          if (b === a) b = (a + 1) % cols;
+          row[b] = i++;
+        }
+        rows.push(row);
+        r++;
+      }
+      return rows;
+    }
+
+    function currentCols() {
+      if (window.matchMedia('(min-width: 1024px)').matches) return desiredCols;
+      if (window.matchMedia('(min-width: 640px)').matches) return Math.min(desiredCols, 3);
+      return Math.min(desiredCols, 2);
+    }
+
+    function layout() {
+      itemTriggers.forEach(function (t) { t.kill(); });
+      itemTriggers = [];
+
+      var cols = currentCols();
+      var rows = buildLayout(originalItems.length, cols);
+      grid.innerHTML = '';
+
+      rows.forEach(function (row) {
+        var rowEl = document.createElement('div');
+        rowEl.className = 'portrait-wall__row';
+        row.forEach(function (idx, ci) {
+          var cell = document.createElement('div');
+          cell.className = 'portrait-wall__cell';
+          if (idx !== -1) {
+            var item = document.createElement('div');
+            item.className = 'portrait-wall__item';
+            item.style.transformOrigin = ci < cols / 2 ? 'right bottom' : 'left bottom';
+            item.appendChild(originalItems[idx]);
+            cell.appendChild(item);
+          }
+          rowEl.appendChild(cell);
+        });
+        grid.appendChild(rowEl);
+      });
+
+      var itemEls = Array.prototype.slice.call(grid.querySelectorAll('.portrait-wall__item'));
+
+      if (reduceMotion || !hasGsap) {
+        itemEls.forEach(function (el) { el.style.transform = 'scale(1)'; });
+        return;
+      }
+
+      itemEls.forEach(function (el) {
+        var distance = (el.offsetHeight + window.innerHeight) * scrollSpeed;
+        var tl = gsap.timeline({
+          scrollTrigger: { trigger: el, start: 'top bottom', end: '+=' + distance, scrub: true }
+        });
+        tl.fromTo(el, { scale: 0 }, { scale: 1, ease: 'power2.out', duration: 0.5 })
+          .to(el, { scale: 0, ease: 'power2.in', duration: 0.5 });
+        itemTriggers.push(tl.scrollTrigger);
+      });
+    }
+
+    layout();
+
+    if (hint && !reduceMotion && hasGsap) {
+      gsap.to(hint, {
+        autoAlpha: 0, ease: 'none',
+        scrollTrigger: { trigger: root, start: 'top top', end: '+=40%', scrub: true }
+      });
+    }
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        layout();
+        if (hasGsap) ScrollTrigger.refresh();
+      }, 200);
+    });
+  }
+
   function initCaseAccordion() {
     var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     document.querySelectorAll('[data-case-accordion]').forEach(function (accordion) {
@@ -528,62 +664,6 @@
           });
         });
       }
-    });
-  }
-
-  /* Форма заявки шлёт JSON на тот же Cloudflare Worker, что и форма на webonix.md —
-     общий Telegram-бот принимает лиды с обоих сайтов, поэтому эндпоинт/формат
-     payload должны совпадать в точности. */
-  function initContactForm() {
-    var form = document.querySelector('[data-contact-form]');
-    if (!form) return;
-    var status = form.querySelector('[data-form-status]');
-    var FORM_ENDPOINT = 'https://webonix-form.igorok7312.workers.dev';
-    var MESSAGES = {
-      ru: {
-        sending: 'Отправка... ',
-        done: 'Заявка отправлена. Ответим в ближайшее время.',
-        error: 'Ошибка отправки. Попробуйте ещё раз или напишите в Telegram.'
-      },
-      ro: {
-        sending: 'Se trimite... ',
-        done: 'Cererea a fost trimisă. Răspundem în curând.',
-        error: 'Eroare la trimitere. Încercați din nou sau scrieți pe Telegram.'
-      }
-    };
-    var msg = MESSAGES[LANG] || MESSAGES.ru;
-    var frames = ['█░░░░░░░░░', '███░░░░░░░', '█████░░░░░', '███████░░░', '██████████'];
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var data = new FormData(form);
-      var payload = {
-        name: data.get('name') || '',
-        phone: data.get('phone') || '',
-        message: data.get('message') || '',
-        messenger: data.get('messenger') || '',
-        page: document.title
-      };
-
-      var frame = 0;
-      status.textContent = msg.sending + frames[0];
-      var iv = setInterval(function () {
-        frame++;
-        if (frame < frames.length) status.textContent = msg.sending + frames[frame];
-      }, 220);
-
-      fetch(FORM_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).then(function (res) {
-        clearInterval(iv);
-        status.textContent = res.ok ? msg.done : msg.error;
-        if (res.ok) form.reset();
-      }).catch(function () {
-        clearInterval(iv);
-        status.textContent = msg.error;
-      });
     });
   }
 
@@ -1062,8 +1142,22 @@
     initFilter();
     initOrbitGallery();
     initCaseAccordion();
-    initContactForm();
+    initPortraitWall();
+    initWorkMetaClamp();
 
     if (isHome) initHero();
   });
+
+  function refreshTriggers() {
+    if (typeof ScrollTrigger === 'undefined') return;
+    ScrollTrigger.refresh();
+  }
+
+  // на холодной загрузке (Ctrl+F5) шрифты/картинки могут догрузиться уже после того,
+  // как initPortraitWall() посчитал позиции триггеров — пересчитываем и по load,
+  // и отдельно по готовности шрифтов (font-display:optional не всегда успевает к load)
+  window.addEventListener('load', refreshTriggers);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(refreshTriggers);
+  }
 })();

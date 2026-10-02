@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Заказать — NADO-design</title>
   <meta name="description" content="Обсудим ваш проект: брендинг, веб-дизайн, презентации или полиграфия. Свяжитесь с NADO-design любым удобным способом." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
-    rel="stylesheet"
-  />
   <link rel="stylesheet" href="../assets/site.css" />
     <link rel="icon" href="../favicon.ico" />
 <link rel="canonical" href="https://nado-design.com/pages/contact.html" />
@@ -82,6 +76,13 @@
               <li class="process-item">
                 <span class="process-item__index">04</span>
                 <div>
+                  <h3 class="process-item__step">Viber</h3>
+                  <p class="process-item__text"><a href="viber://chat?number=%2B37379502527">+3737 950 25 27</a></p>
+                </div>
+              </li>
+              <li class="process-item">
+                <span class="process-item__index">05</span>
+                <div>
                   <h3 class="process-item__step">WhatsApp</h3>
                   <p class="process-item__text"><a href="https://wa.me/37379502527" target="_blank" rel="noopener">+3737 950 25 27</a></p>
                 </div>
@@ -90,32 +91,14 @@
           </div>
 
           <div>
-            <p class="eyebrow">Заявка</p>
-            <form class="contact-form" data-contact-form>
-              <div class="form-row">
-                <label class="form-label" for="cf-name">Имя *</label>
-                <input class="form-input" id="cf-name" type="text" name="name" required />
-              </div>
-              <div class="form-row">
-                <label class="form-label" for="cf-phone">Телефон *</label>
-                <input class="form-input" id="cf-phone" type="tel" name="phone" placeholder="+373" required />
-              </div>
-              <div class="form-row">
-                <label class="form-label" for="cf-message">Что нужно сделать</label>
-                <textarea class="form-input form-textarea" id="cf-message" name="message" rows="4"></textarea>
-              </div>
-              <div class="form-row">
-                <span class="form-label">Удобный мессенджер</span>
-                <div class="form-radio-row">
-                  <label class="form-radio"><input type="radio" name="messenger" value="viber" checked /> Viber</label>
-                  <label class="form-radio"><input type="radio" name="messenger" value="telegram" /> Telegram</label>
-                  <label class="form-radio"><input type="radio" name="messenger" value="whatsapp" /> WhatsApp</label>
-                </div>
-              </div>
-              <button class="button form-submit" type="submit" data-magnetic>Отправить заявку →</button>
-              <p class="form-status" data-form-status aria-live="polite"></p>
-              <p class="form-note">Данные не передаются третьим лицам.</p>
-            </form>
+            <p class="eyebrow">Написать нам</p>
+            <p class="process-item__text">Выберите удобный мессенджер — коротко опишите задачу, и мы ответим в течение рабочего дня.</p>
+            <div class="contact-actions">
+              <a class="button" href="https://t.me/nadodesigncom" target="_blank" rel="noopener" data-magnetic>Telegram →</a>
+              <a class="button" href="viber://chat?number=%2B37379502527" data-magnetic>Viber →</a>
+              <a class="button" href="https://wa.me/37379502527" target="_blank" rel="noopener" data-magnetic>WhatsApp →</a>
+              <a class="button" href="tel:+37379502527" data-magnetic>Позвонить →</a>
+            </div>
           </div>
         </div>
       </div>
@@ -134,10 +117,10 @@
   <div data-footer></div>
 <script>window.__ROOT__ = "../";</script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="https://unpkg.com/split-type@0.3.4/umd/index.min.js"></script>
+  <script src="../assets/vendor/gsap.min.js"></script>
+  <script src="../assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="../assets/vendor/lenis.min.js"></script>
+  <script src="../assets/vendor/split-type.min.js"></script>
   <script src="../assets/site.js"></script>
 </body>
 </html>

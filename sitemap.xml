@@ -69,9 +69,17 @@
   </url>
   <url>
     <loc>https://nado-design.com/pages/contact.html</loc>
+    <lastmod>2026-10-02</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/contact.html" />
     <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/contact.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/contact.html" />
+  </url>
+  <url>
+    <loc>https://nado-design.com/pages/privacy.html</loc>
+    <lastmod>2026-10-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/privacy.html" />
   </url>
   <url>
     <loc>https://nado-design.com/pages/presentations.html</loc>
@@ -98,10 +106,10 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works.html" />
   </url>
   <url>
-    <loc>https://nado-design.com/pages/works/documentolog.html</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/works/documentolog.html" />
-    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/works/documentolog.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works/documentolog.html" />
+    <loc>https://nado-design.com/pages/works/alo.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/works/alo.html" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/works/alo.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works/alo.html" />
   </url>
   <url>
     <loc>https://nado-design.com/pages/works/ecklet.html</loc>
@@ -267,9 +275,17 @@
   </url>
   <url>
     <loc>https://nado-design.com/ro/pages/contact.html</loc>
+    <lastmod>2026-10-02</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/contact.html" />
     <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/contact.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/contact.html" />
+  </url>
+  <url>
+    <loc>https://nado-design.com/ro/pages/privacy.html</loc>
+    <lastmod>2026-10-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/privacy.html" />
   </url>
   <url>
     <loc>https://nado-design.com/ro/pages/presentations.html</loc>
@@ -296,10 +312,10 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works.html" />
   </url>
   <url>
-    <loc>https://nado-design.com/ro/pages/works/documentolog.html</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/works/documentolog.html" />
-    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/works/documentolog.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works/documentolog.html" />
+    <loc>https://nado-design.com/ro/pages/works/alo.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nado-design.com/pages/works/alo.html" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://nado-design.com/ro/pages/works/alo.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nado-design.com/pages/works/alo.html" />
   </url>
   <url>
     <loc>https://nado-design.com/ro/pages/works/ecklet.html</loc>
